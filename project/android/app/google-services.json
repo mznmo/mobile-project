@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "1048728172664",
+    "firebase_url": "https://mobile-470d7-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "mobile-470d7",
+    "storage_bucket": "mobile-470d7.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1048728172664:android:9f0e425acb99e313bed58d",
+        "android_client_info": {
+          "package_name": "com.example.project"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBmke_U_eHUmo04N80IK8PMvjYMKIi2CAA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
