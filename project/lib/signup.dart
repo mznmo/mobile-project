@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;  // Import the http package
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 
 
@@ -30,7 +30,7 @@ class _SignUpPageState extends State<SignUpPage> {
     String password = _passwordController.text;
 
     final String databaseUrl =
-        'https://mobile2-b7914-default-rtdb.europe-west1.firebasedatabase.app/users.json'; // Replace with your Firebase Database URL
+        'https://mobile2-b7914-default-rtdb.europe-west1.firebasedatabase.app/users.json';
 
     try {
       final response = await http.post(
@@ -43,17 +43,11 @@ class _SignUpPageState extends State<SignUpPage> {
       );
 
       if (response.statusCode == 200) {
-        // Data stored successfully
         print('User data stored successfully');
-        // Clear text fields after successful sign-up
         _userNameController.clear();
         _emailController.clear();
         _passwordController.clear();
-        // Navigate to the next screen upon successful sign-up
-        // Example:
-        // Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomeScreen()));
       } else {
-        // Handle error
         print('Failed to store user data - ${response.statusCode}');
         throw Exception('Failed to store user data');
       }

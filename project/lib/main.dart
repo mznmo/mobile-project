@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import 'signup.dart'; // Import the SignUpScreen
+import 'signup.dart';
 
 void main() {
   runApp(MyApp());
@@ -14,9 +13,9 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      initialRoute: '/signup', // Set the initial route
-      routes: {// Define the '/' route for SignInScreen
-        '/signup': (context) => const SignUpPage(), // Define the '/signup' route for SignUpScreen
+      initialRoute: '/signup',
+      routes: {
+        '/signup': (context) => const SignUpPage(),
       },
     );
   }

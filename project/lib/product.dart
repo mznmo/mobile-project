@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'productModel.dart'; // Import the Product model
+import 'productModel.dart';
 
 class ProductsPage extends StatelessWidget {
-  // Dummy product data (replace with your actual product list)
   final List<Product> products = [
     Product(
       name: 'Product 1',
@@ -40,8 +39,6 @@ class ProductsPage extends StatelessWidget {
             subtitle: Text(product.description),
             trailing: Text('\$${product.price.toStringAsFixed(2)}'),
             onTap: () {
-              // Handle tapping on a product (e.g., navigate to product details)
-              // For simplicity, you can show a dialog with product details
               showDialog(
                 context: context,
                 builder: (context) => AlertDialog(
@@ -58,7 +55,7 @@ class ProductsPage extends StatelessWidget {
                   actions: [
                     TextButton(
                       onPressed: () {
-                        Navigator.pop(context); // Close the dialog
+                        Navigator.pop(context); 
                       },
                       child: Text('Close'),
                     ),
