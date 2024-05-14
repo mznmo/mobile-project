@@ -3,17 +3,17 @@
 <plist version="1.0">
 <dict>
 	<key>API_KEY</key>
-	<string>AIzaSyAaUKLo2njqBBQ0mV_qfb276UnKIo7vBHE</string>
+	<string>AIzaSyAerzGjbOZf-uy28Jn2EG-YBDSTXEqMmfk</string>
 	<key>GCM_SENDER_ID</key>
-	<string>1048728172664</string>
+	<string>820320428284</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
 	<string>com.example.project</string>
 	<key>PROJECT_ID</key>
-	<string>mobile-470d7</string>
+	<string>mobile2-b7914</string>
 	<key>STORAGE_BUCKET</key>
-	<string>mobile-470d7.appspot.com</string>
+	<string>mobile2-b7914.appspot.com</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -25,8 +25,8 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:1048728172664:ios:0524d0165988fe05bed58d</string>
+	<string>1:820320428284:ios:c07a0d4f957bcc7f79f779</string>
 	<key>DATABASE_URL</key>
-	<string>https://mobile-470d7-default-rtdb.europe-west1.firebasedatabase.app</string>
+	<string>https://mobile2-b7914-default-rtdb.europe-west1.firebasedatabase.app</string>
 </dict>
 </plist>
