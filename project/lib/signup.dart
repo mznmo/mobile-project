@@ -1,17 +1,16 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'signin.dart';
 
+class SignUpPage extends StatefulWidget {
+  const SignUpPage({Key? key}) : super(key: key);
 
-class SignUpPage extends StatefulWidget{
-  const SignUpPage({super.key});
-  
   @override
   State<StatefulWidget> createState() => _SignUpPageState();
 }
 
 class _SignUpPageState extends State<SignUpPage> {
-
   TextEditingController _userNameController = TextEditingController();
   TextEditingController _emailController = TextEditingController();
   TextEditingController _passwordController = TextEditingController();
@@ -57,6 +56,13 @@ class _SignUpPageState extends State<SignUpPage> {
     }
   }
 
+  void _navigateToSignInPage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => SignInPage()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -96,11 +102,14 @@ class _SignUpPageState extends State<SignUpPage> {
               onPressed: _signUp,
               child: Text('Sign Up'),
             ),
+            SizedBox(height: 16.0),
+            TextButton(
+              onPressed: _navigateToSignInPage,
+              child: Text('Already have an account? Log in'),
+            ),
           ],
         ),
       ),
     );
   }
 }
-
-
