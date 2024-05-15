@@ -26,11 +26,9 @@ class _SignInPageState extends State<SignInPage> {
     if (response.statusCode == 200) {
       final data = json.decode(response.body) as Map<String, dynamic>;
 
-      // Iterate through the user data to find a match
       bool userFound = false;
       data.forEach((userId, userData) {
         if (userData['email'] == email) {
-          // Validate password
           if (userData['password'] == password) {
             print('User logged in successfully');
             _showSnackBar('User logged in successfully');
