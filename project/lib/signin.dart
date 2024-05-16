@@ -32,6 +32,7 @@ class _SignInPageState extends State<SignInPage> {
           if (userData['password'] == password) {
             print('User logged in successfully');
             _showSnackBar('User logged in successfully');
+            Navigator.pushReplacementNamed(context, '/products');
           } else {
             _showSnackBar('Incorrect password');
           }

@@ -46,6 +46,7 @@ class _SignUpPageState extends State<SignUpPage> {
         _userNameController.clear();
         _emailController.clear();
         _passwordController.clear();
+        Navigator.pushReplacementNamed(context, '/signin');
       } else {
         print('Failed to store user data - ${response.statusCode}');
         throw Exception('Failed to store user data');
