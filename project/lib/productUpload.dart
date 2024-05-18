@@ -15,7 +15,6 @@ class _ProductUploadPageState extends State<ProductUploadPage> {
   final TextEditingController _imageUrlController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
 
-  // Function to upload product to database
   Future<void> _uploadProduct() async {
     String name = _nameController.text;
     String description = _descriptionController.text;
@@ -23,7 +22,7 @@ class _ProductUploadPageState extends State<ProductUploadPage> {
     double price = double.tryParse(_priceController.text) ?? 0.0;
 
     final String databaseUrl =
-        'https://mobile2-b7914-default-rtdb.europe-west1.firebasedatabase.app/products.json'; // Replace with your database URL
+        'https://mobile2-b7914-default-rtdb.europe-west1.firebasedatabase.app/products.json';
 
     try {
       final response = await http.post(
@@ -38,7 +37,7 @@ class _ProductUploadPageState extends State<ProductUploadPage> {
 
       if (response.statusCode == 200) {
         print('Product uploaded successfully');
-        Navigator.pop(context); // Close the upload page after successful upload
+        Navigator.pop(context);
       } else {
         throw Exception('Failed to upload product');
       }
@@ -78,13 +77,11 @@ class _ProductUploadPageState extends State<ProductUploadPage> {
             SizedBox(height: 20.0),
             ElevatedButton(
               onPressed: () async {
-                // File Picker to choose image
                 FilePickerResult? result =
                     await FilePicker.platform.pickFiles(type: FileType.image);
                 if (result != null) {
                   _imageUrlController.text = result.files.single.path!;
                 } else {
-                  // User canceled the file picking
                 }
               },
               child: Text('Choose Image'),

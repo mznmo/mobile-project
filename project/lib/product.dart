@@ -1,19 +1,29 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:path_provider/path_provider.dart'; // Import path_provider package
+import 'productDetails.dart';
+import 'productDetailsModel.dart';
 import 'productModel.dart';
 import 'productUpload.dart';
+import 'signin.dart';
+
+enum UserRole {
+  shopper,
+  vendor,
+}
 
 class ProductsPage extends StatefulWidget {
+  final UserRole userRole;
+
+  ProductsPage({required this.userRole});
+
   @override
   _ProductsPageState createState() => _ProductsPageState();
 }
 
 class _ProductsPageState extends State<ProductsPage> {
   List<Product> products = [];
-  bool isRefreshing = false; // Track refresh state
+  bool isRefreshing = false;
 
   @override
   void initState() {
@@ -22,71 +32,92 @@ class _ProductsPageState extends State<ProductsPage> {
   }
 
   Future<void> fetchProducts() async {
-    final String databaseUrl =
+    final String productsUrl =
         'https://mobile2-b7914-default-rtdb.europe-west1.firebasedatabase.app/products.json';
 
     try {
-      final response = await http.get(Uri.parse(databaseUrl));
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> data = jsonDecode(response.body);
-        List<Product> fetchedProducts = [];
-        data.forEach((productId, productData) {
-          fetchedProducts.add(Product(
-            name: productData['name'],
-            description: productData['description'],
-            imageUrl: productData['imageUrl'],
-            price: productData['price'].toDouble(),
-          ));
-        });
+      final productsResponse = await http.get(Uri.parse(productsUrl));
 
-        setState(() {
-          products = fetchedProducts;
-        });
+
+      if (productsResponse.statusCode == 200) {
+        final dynamic responseBody = productsResponse.body;
+
+     
+        if (responseBody != null && responseBody.isNotEmpty) {
+          final Map<String, dynamic> productsData = jsonDecode(responseBody);
+          List<Product> fetchedProducts = [];
+
+
+          productsData.forEach((productId, productData) {
+            final String productName = productData['name'];
+            final String productDescription = productData['description'];
+            final String productImageUrl = productData['imageUrl'];
+            final double productPrice =
+                double.parse(productData['price'].toString());
+
+            fetchedProducts.add(Product(
+              id: productId,
+              name: productName,
+              description: productDescription,
+              imageUrl: productImageUrl,
+              price: productPrice,
+              averageRating: 0.0,
+            ));
+          });
+
+          setState(() {
+            products = fetchedProducts;
+            calculateAverageRatings();
+          });
+        } else {
+          throw Exception('Empty or null response body');
+        }
       } else {
-        throw Exception('Failed to fetch products');
+        throw Exception(
+            'Failed to fetch products: ${productsResponse.reasonPhrase}');
       }
     } catch (e) {
       print('Error fetching products: $e');
     }
   }
 
-  Future<void> addProduct(Product newProduct) async {
-    // Add the product to the database
-    final String databaseUrl =
-        'https://mobile2-b7914-default-rtdb.europe-west1.firebasedatabase.app/products.json';
 
-    try {
-      final response = await http.post(
-        Uri.parse(databaseUrl),
-        body: jsonEncode({
-          'name': newProduct.name,
-          'description': newProduct.description,
-          'imageUrl': newProduct.imageUrl,
-          'price': newProduct.price,
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        print('Product uploaded successfully');
-        fetchProducts(); // Refresh products list
-      } else {
-        throw Exception('Failed to upload product');
-      }
-    } catch (e) {
-      print('Error uploading product: $e');
+  void calculateAverageRatings() async {
+    for (int i = 0; i < products.length; i++) {
+      double averageRating =
+          await fetchAndCalculateAverageRating(products[i].id);
+      setState(() {
+        products[i].averageRating = averageRating;
+      });
     }
   }
 
-  Future<void> _refreshProducts() async {
-    setState(() {
-      isRefreshing = true; // Set refreshing state
-    });
 
-    await fetchProducts(); // Fetch products again
+  Future<double> fetchAndCalculateAverageRating(String productId) async {
+    final String databaseUrl =
+        'https://mobile2-b7914-default-rtdb.europe-west1.firebasedatabase.app/$productId/comments.json';
 
-    setState(() {
-      isRefreshing = false; // Reset refreshing state
-    });
+    try {
+      final response = await http.get(Uri.parse(databaseUrl));
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        List<double> ratings = [];
+        data.forEach((commentId, commentData) {
+          ratings.add(commentData['rating'].toDouble());
+        });
+        if (ratings.isNotEmpty) {
+          double totalRating = ratings.reduce((value, element) => value + element);
+          return totalRating / ratings.length;
+        } else {
+          return 0.0;
+        }
+      } else {
+        throw Exception('Failed to fetch comments for product $productId');
+      }
+    } catch (e) {
+      print('Error fetching comments: $e');
+      return 0.0;
+    }
   }
 
   @override
@@ -96,40 +127,65 @@ class _ProductsPageState extends State<ProductsPage> {
         title: Text('Products'),
       ),
       body: RefreshIndicator(
-        onRefresh: _refreshProducts,
+        onRefresh: fetchProducts,
         child: ListView.builder(
           itemCount: products.length,
           itemBuilder: (context, index) {
             final Product product = products[index];
             return ListTile(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        ProductDetailsPage(product: product),
+                  ),
+                );
+              },
               leading: Container(
                 width: 80,
                 height: 80,
-                child: Image.file(
-                  File(product.imageUrl),
-                  fit: BoxFit.cover,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  image: DecorationImage(
+                    fit: BoxFit.cover,
+                    image: NetworkImage(product.imageUrl),
+                  ),
                 ),
               ),
               title: Text(product.name),
-              subtitle: Text(product.description),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(product.description),
+                  SizedBox(height: 4),
+                  Text(
+                    'Rating: ${product.averageRating.toStringAsFixed(1)}',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
               trailing: Text('\$${product.price.toStringAsFixed(2)}'),
             );
           },
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => ProductUploadPage()),
-          ).then((newProduct) {
-            if (newProduct != null && newProduct is Product) {
-              addProduct(newProduct);
-            }
-          });
-        },
-        child: Icon(Icons.add),
-      ),
+      floatingActionButton: widget.userRole == UserRole.vendor
+          ? FloatingActionButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ProductUploadPage()),
+                ).then((newProduct) {
+                  if (newProduct != null && newProduct is Product) {
+                  }
+                });
+              },
+              child: Icon(Icons.add),
+            )
+          : null,
     );
   }
 }
