@@ -1,21 +1,18 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'Models/cartModel.dart';
+import 'Models/productModel.dart';
+import 'cart.dart';
 import 'productDetails.dart';
-import 'productDetailsModel.dart';
-import 'productModel.dart';
+import 'Models/userModel.dart';
 import 'productUpload.dart';
 import 'signin.dart';
 
-enum UserRole {
-  shopper,
-  vendor,
-}
-
 class ProductsPage extends StatefulWidget {
-  final UserRole userRole;
+  final User? user;
 
-  ProductsPage({required this.userRole});
+  ProductsPage({this.user});
 
   @override
   _ProductsPageState createState() => _ProductsPageState();
@@ -23,7 +20,11 @@ class ProductsPage extends StatefulWidget {
 
 class _ProductsPageState extends State<ProductsPage> {
   List<Product> products = [];
+  List<Product> filteredProducts = [];
+  Cart customerCart = Cart();
   bool isRefreshing = false;
+  String selectedCategory = 'All';
+  List<String> categories = ['All'];
 
   @override
   void initState() {
@@ -38,15 +39,12 @@ class _ProductsPageState extends State<ProductsPage> {
     try {
       final productsResponse = await http.get(Uri.parse(productsUrl));
 
-
       if (productsResponse.statusCode == 200) {
         final dynamic responseBody = productsResponse.body;
 
-     
         if (responseBody != null && responseBody.isNotEmpty) {
           final Map<String, dynamic> productsData = jsonDecode(responseBody);
           List<Product> fetchedProducts = [];
-
 
           productsData.forEach((productId, productData) {
             final String productName = productData['name'];
@@ -54,6 +52,8 @@ class _ProductsPageState extends State<ProductsPage> {
             final String productImageUrl = productData['imageUrl'];
             final double productPrice =
                 double.parse(productData['price'].toString());
+            final String vendorName = productData['vendorName'];
+            final String category = productData['category']; // Added category
 
             fetchedProducts.add(Product(
               id: productId,
@@ -62,11 +62,18 @@ class _ProductsPageState extends State<ProductsPage> {
               imageUrl: productImageUrl,
               price: productPrice,
               averageRating: 0.0,
+              vendorName: vendorName,
+              category: category,
             ));
+
+            if (!categories.contains(category)) {
+              categories.add(category);
+            }
           });
 
           setState(() {
             products = fetchedProducts;
+            filteredProducts = products;
             calculateAverageRatings();
           });
         } else {
@@ -81,7 +88,6 @@ class _ProductsPageState extends State<ProductsPage> {
     }
   }
 
-
   void calculateAverageRatings() async {
     for (int i = 0; i < products.length; i++) {
       double averageRating =
@@ -90,8 +96,8 @@ class _ProductsPageState extends State<ProductsPage> {
         products[i].averageRating = averageRating;
       });
     }
+    filterProducts();
   }
-
 
   Future<double> fetchAndCalculateAverageRating(String productId) async {
     final String databaseUrl =
@@ -120,72 +126,151 @@ class _ProductsPageState extends State<ProductsPage> {
     }
   }
 
+  void filterProducts() {
+    setState(() {
+      if (selectedCategory == 'All') {
+        filteredProducts = products;
+      } else {
+        filteredProducts = products
+            .where((product) => product.category == selectedCategory)
+            .toList();
+      }
+    });
+  }
+
+  void _logout() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => SignInPage()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Products'),
-      ),
-      body: RefreshIndicator(
-        onRefresh: fetchProducts,
-        child: ListView.builder(
-          itemCount: products.length,
-          itemBuilder: (context, index) {
-            final Product product = products[index];
-            return ListTile(
-              onTap: () {
+        actions: [
+          if (widget.user != null && widget.user!.role == 'vendor')
+            IconButton(
+              icon: Icon(Icons.add),
+              onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) =>
-                        ProductDetailsPage(product: product),
+                    builder: (context) => ProductUploadPage(user: widget.user),
                   ),
                 );
               },
-              leading: Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  image: DecorationImage(
-                    fit: BoxFit.cover,
-                    image: NetworkImage(product.imageUrl),
-                  ),
+            ),
+          if (widget.user != null && widget.user!.role == 'shopper')
+            Row(
+              children: [
+                Text(widget.user!.username),
+                IconButton(
+                  icon: Icon(Icons.logout),
+                  onPressed: _logout,
                 ),
-              ),
-              title: Text(product.name),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(product.description),
-                  SizedBox(height: 4),
-                  Text(
-                    'Rating: ${product.averageRating.toStringAsFixed(1)}',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-              trailing: Text('\$${product.price.toStringAsFixed(2)}'),
-            );
-          },
-        ),
+              ],
+            ),
+        ],
       ),
-      floatingActionButton: widget.userRole == UserRole.vendor
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: DropdownButton<String>(
+              value: selectedCategory,
+              onChanged: (String? newValue) {
+                setState(() {
+                  selectedCategory = newValue!;
+                  filterProducts();
+                });
+              },
+              items: categories.map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+            ),
+          ),
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: fetchProducts,
+              child: ListView.builder(
+                itemCount: filteredProducts.length,
+                itemBuilder: (context, index) {
+                  final Product product = filteredProducts[index];
+                  return ListTile(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ProductDetailsPage(
+                              product: product,
+                              cart: customerCart), // Pass the customer cart
+                        ),
+                      );
+                    },
+                    leading: Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        image: DecorationImage(
+                          fit: BoxFit.cover,
+                          image: NetworkImage(product.imageUrl),
+                        ),
+                      ),
+                    ),
+                    title: Text(product.name),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(product.description),
+                        SizedBox(height: 4),
+                        Text(
+                          'Rating: ${product.averageRating.toStringAsFixed(1)}',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    trailing: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          'Vendor: ${product.vendorName}',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text('\$${product.price.toStringAsFixed(2)}'),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+      floatingActionButton: widget.user?.role == 'shopper'
           ? FloatingActionButton(
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => ProductUploadPage()),
-                ).then((newProduct) {
-                  if (newProduct != null && newProduct is Product) {
-                  }
-                });
+                  MaterialPageRoute(
+                    builder: (context) => CartPage(
+                        cart: customerCart), // Pass the customer cart
+                  ),
+                );
               },
-              child: Icon(Icons.add),
+              child: Icon(Icons.shopping_cart),
             )
-          : null,
+          : null, // Hide the shopping cart button for vendors
     );
   }
 }
