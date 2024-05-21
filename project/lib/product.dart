@@ -1,13 +1,13 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'Models/cartModel.dart';
 import 'Models/productModel.dart';
 import 'cart.dart';
 import 'productDetails.dart';
-import 'Models/userModel.dart';
 import 'productUpload.dart';
 import 'signin.dart';
+import 'Models/userModel.dart';
 
 class ProductsPage extends StatefulWidget {
   final User? user;
@@ -24,7 +24,7 @@ class _ProductsPageState extends State<ProductsPage> {
   Cart customerCart = Cart();
   bool isRefreshing = false;
   String selectedCategory = 'All';
-  List<String> categories = ['All'];
+  List<String> categories = ['All', 'Office equipment', 'Notebooks & Notepads', 'Printers', 'Computers'];
 
   @override
   void initState() {
@@ -53,7 +53,7 @@ class _ProductsPageState extends State<ProductsPage> {
             final double productPrice =
                 double.parse(productData['price'].toString());
             final String vendorName = productData['vendorName'];
-            final String category = productData['category']; // Added category
+            final String category = productData['category'];
 
             fetchedProducts.add(Product(
               id: productId,
@@ -65,10 +65,6 @@ class _ProductsPageState extends State<ProductsPage> {
               vendorName: vendorName,
               category: category,
             ));
-
-            if (!categories.contains(category)) {
-              categories.add(category);
-            }
           });
 
           setState(() {
@@ -112,7 +108,8 @@ class _ProductsPageState extends State<ProductsPage> {
           ratings.add(commentData['rating'].toDouble());
         });
         if (ratings.isNotEmpty) {
-          double totalRating = ratings.reduce((value, element) => value + element);
+          double totalRating =
+              ratings.reduce((value, element) => value + element);
           return totalRating / ratings.length;
         } else {
           return 0.0;
@@ -158,7 +155,8 @@ class _ProductsPageState extends State<ProductsPage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => ProductUploadPage(user: widget.user),
+                    builder: (context) =>
+                        ProductUploadPage(user: widget.user),
                   ),
                 );
               },
@@ -172,6 +170,18 @@ class _ProductsPageState extends State<ProductsPage> {
                   onPressed: _logout,
                 ),
               ],
+            ),
+          if (widget.user == null || widget.user!.role == null)
+            TextButton( // Add a login button
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => SignInPage(),
+                  ),
+                );
+              },
+              child: Text('Login'),
             ),
         ],
       ),
@@ -190,6 +200,7 @@ class _ProductsPageState extends State<ProductsPage> {
               items: categories.map<DropdownMenuItem<String>>((String value) {
                 return DropdownMenuItem<String>(
                   value: value,
+                 
                   child: Text(value),
                 );
               }).toList(),
@@ -208,8 +219,9 @@ class _ProductsPageState extends State<ProductsPage> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => ProductDetailsPage(
-                              product: product,
-                              cart: customerCart), // Pass the customer cart
+                            product: product,
+                            cart: customerCart,
+                          ),
                         ),
                       );
                     },
@@ -264,13 +276,14 @@ class _ProductsPageState extends State<ProductsPage> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => CartPage(
-                        cart: customerCart), // Pass the customer cart
+                      cart: customerCart,
+                    ),
                   ),
                 );
               },
               child: Icon(Icons.shopping_cart),
             )
-          : null, // Hide the shopping cart button for vendors
+          : null,
     );
   }
 }

@@ -19,7 +19,7 @@ class _ProductUploadPageState extends State<ProductUploadPage> {
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _imageUrlController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
-  String selectedCategory = 'Office equipment'; // Default category
+  String selectedCategory = 'Office equipment';
 
   Future<void> _uploadProduct() async {
     String name = _nameController.text;
@@ -47,7 +47,6 @@ class _ProductUploadPageState extends State<ProductUploadPage> {
 
       if (response.statusCode == 200) {
         print('Product uploaded successfully');
-        // Notify users
         await EmailService.sendEmailToUsers(name);
         Navigator.pop(context);
       } else {

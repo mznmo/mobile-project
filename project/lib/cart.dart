@@ -84,7 +84,6 @@ class _CartPageState extends State<CartPage> {
                   SizedBox(height: 10),
                   ElevatedButton(
                     onPressed: () {
-                      // Implement checkout logic
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('Order Placed Successfully')),
                       );
