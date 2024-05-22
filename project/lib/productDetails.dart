@@ -2,13 +2,16 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:http/http.dart' as http;
-import 'productDetailsModel.dart';
-import 'productModel.dart';
+import 'Models/cartModel.dart';
+import 'Models/productDetailsModel.dart';
+import 'Models/productModel.dart';
+
 
 class ProductDetailsPage extends StatefulWidget {
   final Product product;
+  final Cart cart;
 
-  ProductDetailsPage({required this.product});
+  ProductDetailsPage({required this.product, required this.cart});
 
   @override
   _ProductDetailsPageState createState() => _ProductDetailsPageState();
@@ -99,6 +102,14 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                 ),
                 SizedBox(height: 16),
                 Text(
+                  'Category: ${widget.product.category}', // Display the category
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
+                ),
+                SizedBox(height: 16),
+                Text(
                   'Average Rating: ${averageRating.toStringAsFixed(1)}',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
@@ -149,6 +160,18 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                     }
                   },
                   child: Text('Add Comment & Rating'),
+                ),
+                SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    widget.cart.addProduct(widget.product);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Added to cart'),
+                      ),
+                    );
+                  },
+                  child: Text('Add to Cart'),
                 ),
               ],
             ),

@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
       initialRoute: '/products',
       routes: {
         '/signup': (context) => const SignUpPage(),
-        '/products': (context) => ProductsPage(userRole: UserRole.shopper,),
+        '/products': (context) => ProductsPage(),
         '/signin': (context) => const SignInPage()
       },
     );

@@ -14,6 +14,7 @@ class _SignUpPageState extends State<SignUpPage> {
   TextEditingController _userNameController = TextEditingController();
   TextEditingController _emailController = TextEditingController();
   TextEditingController _passwordController = TextEditingController();
+  String _selectedRole = 'shopper'; // Default role is 'shopper'
 
   @override
   void dispose() {
@@ -24,7 +25,7 @@ class _SignUpPageState extends State<SignUpPage> {
   }
 
   Future<void> _signUp() async {
-    String userName = _userNameController.text;
+    String username = _userNameController.text;
     String email = _emailController.text;
     String password = _passwordController.text;
 
@@ -35,9 +36,10 @@ class _SignUpPageState extends State<SignUpPage> {
       final response = await http.post(
         Uri.parse(databaseUrl),
         body: json.encode({
-          'userName': userName,
+          'username': username,
           'email': email,
           'password': password,
+          'role': _selectedRole, // Include selected role in user data
         }),
       );
 
@@ -97,6 +99,30 @@ class _SignUpPageState extends State<SignUpPage> {
                 labelText: 'Password',
               ),
               obscureText: true,
+            ),
+            SizedBox(height: 20.0),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('Role: '),
+                DropdownButton<String>(
+                  value: _selectedRole,
+                  onChanged: (String? value) {
+                    setState(() {
+                      _selectedRole = value!;
+                    });
+                  },
+                  items: <String>[
+                    'shopper',
+                    'vendor',
+                  ].map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value == 'shopper' ? 'Shopper' : 'Vendor'),
+                    );
+                  }).toList(),
+                ),
+              ],
             ),
             SizedBox(height: 20.0),
             ElevatedButton(

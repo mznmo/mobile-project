@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'product.dart';
 import 'dart:convert';
-import 'signup.dart';
+import 'package:flutter/material.dart';
+import 'Models/userModel.dart';
+import 'product.dart';
+import 'package:http/http.dart' as http;
+import 'signUp.dart'; // Import the SignUpPage
 
 class SignInPage extends StatefulWidget {
   const SignInPage({Key? key}) : super(key: key);
@@ -14,14 +15,6 @@ class SignInPage extends StatefulWidget {
 class _SignInPageState extends State<SignInPage> {
   TextEditingController _emailController = TextEditingController();
   TextEditingController _passwordController = TextEditingController();
-  UserRole _selectedRole = UserRole.shopper;
-
-  void _navigateToSignUpPage() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => SignUpPage()),
-    );
-  }
 
   Future<void> _signIn() async {
     String email = _emailController.text;
@@ -40,15 +33,30 @@ class _SignInPageState extends State<SignInPage> {
         data.forEach((userId, userData) {
           if (userData['email'] == email) {
             if (userData['password'] == password) {
-              print('User logged in successfully');
-              _showSnackBar('User logged in successfully');
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ProductsPage(userRole: _selectedRole),
-                ),
-              );
+              if (userData.containsKey('role')) {
+                print('Role type: ${userData['role'].runtimeType}');
+                if (userData['role'] is String) {
+                  User user = User(
+                    username: userData['username'],
+                    email: userData['email'],
+                    role: userData['role'], // Assuming the role is stored in the database
+                  );
+                  print('User logged in successfully');
+                  _showSnackBar('User logged in successfully');
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ProductsPage(user: user), // Pass the user object with role
+                    ),
+                  );
+                } else {
+                  throw Exception('Role is not a string');
+                }
+              } else {
+                throw Exception('Role field does not exist in user data');
+              }
             } else {
+              print('Incorrect password');
               _showSnackBar('Incorrect password');
             }
             userFound = true;
@@ -56,6 +64,7 @@ class _SignInPageState extends State<SignInPage> {
         });
 
         if (!userFound) {
+          print('User not found');
           _showSnackBar('User not found');
         }
       } else {
@@ -71,6 +80,13 @@ class _SignInPageState extends State<SignInPage> {
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
+    );
+  }
+
+  void _navigateToSignUp() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => SignUpPage()),
     );
   }
 
@@ -102,38 +118,20 @@ class _SignInPageState extends State<SignInPage> {
               obscureText: true,
             ),
             SizedBox(height: 20.0),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('Are you a: '),
-                DropdownButton<UserRole>(
-                  value: _selectedRole,
-                  onChanged: (UserRole? value) {
-                    setState(() {
-                      _selectedRole = value!;
-                    });
-                  },
-                  items: <UserRole>[
-                    UserRole.shopper,
-                    UserRole.vendor,
-                  ].map<DropdownMenuItem<UserRole>>((UserRole value) {
-                    return DropdownMenuItem<UserRole>(
-                      value: value,
-                      child: Text(value == UserRole.shopper ? 'Shopper' : 'Vendor'),
-                    );
-                  }).toList(),
-                ),
-              ],
-            ),
-            SizedBox(height: 20.0),
             ElevatedButton(
               onPressed: _signIn,
               child: Text('Sign In'),
             ),
-            SizedBox(height: 16.0),
-            TextButton(
-              onPressed: _navigateToSignUpPage,
-              child: Text('Do not have an account? Sign Up'),
+            SizedBox(height: 20.0),
+            GestureDetector(
+              onTap: _navigateToSignUp,
+              child: Text(
+                "Don't have an account? Sign up",
+                style: TextStyle(
+                  color: Colors.blue,
+                  decoration: TextDecoration.underline,
+                ),
+              ),
             ),
           ],
         ),
