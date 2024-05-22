@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'product.dart';
 import 'dart:convert';
+import 'signup.dart';
 
 class SignInPage extends StatefulWidget {
   const SignInPage({Key? key}) : super(key: key);
@@ -14,6 +15,13 @@ class _SignInPageState extends State<SignInPage> {
   TextEditingController _emailController = TextEditingController();
   TextEditingController _passwordController = TextEditingController();
   UserRole _selectedRole = UserRole.shopper;
+
+  void _navigateToSignUpPage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => SignUpPage()),
+    );
+  }
 
   Future<void> _signIn() async {
     String email = _emailController.text;
@@ -121,6 +129,11 @@ class _SignInPageState extends State<SignInPage> {
             ElevatedButton(
               onPressed: _signIn,
               child: Text('Sign In'),
+            ),
+            SizedBox(height: 16.0),
+            TextButton(
+              onPressed: _navigateToSignUpPage,
+              child: Text('Do not have an account? Sign Up'),
             ),
           ],
         ),
